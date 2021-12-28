@@ -9,14 +9,14 @@ import dev.iimetra.assettocorsa4j.telemetry.serializer.Writer
 import mu.KotlinLogging
 import java.net.DatagramSocket
 
-private const val LOCAL_IP_ADDRESS = "192.168.2.54" // Connecting...
+private const val LOCAL_IP_ADDRESS = "192.168.2.59" // Connecting...
 private const val SERIAL_TTY = "/dev/ttyS33"
 //private const val SERIAL_TTY = "/dev/ttyUSB1"
 
-private const val SENSITIVITY_HORIZONTAL_LEFT = -1f
-private const val SENSITIVITY_HORIZONTAL_RIGHT = 1f
-private const val SENSITIVITY_FRONTAL_REV = -1f
-private const val SENSITIVITY_FRONTAL_FORW = 1f
+private const val SENSITIVITY_HORIZONTAL_LEFT = -2f
+private const val SENSITIVITY_HORIZONTAL_RIGHT = 2f
+private const val SENSITIVITY_FRONTAL_REV = -2f
+private const val SENSITIVITY_FRONTAL_FORW = 2f
 private const val OUTPUT_MIN = 712f
 private const val OUTPUT_MAX = 312f
 
