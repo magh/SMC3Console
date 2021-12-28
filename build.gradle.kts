@@ -6,6 +6,7 @@ val jvmTargetVersion: String by project
 
 plugins {
     kotlin("jvm")
+    application
 }
 
 group = "simracing"
@@ -29,6 +30,10 @@ dependencies {
     implementation("org.bidib.jbidib:jbidibc-rxtx-2.2:1.6.0")
     implementation("org.bidib.jbidib:bidib-rxtx-binaries:2.2")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
+}
+
+application {
+    mainClass.set("com.mathias.simracing.AssettoCorsaKt")
 }
 
 val compileKotlin: KotlinCompile by tasks

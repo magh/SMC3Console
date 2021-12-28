@@ -13,6 +13,13 @@ private const val LOCAL_IP_ADDRESS = "192.168.2.54" // Connecting...
 private const val SERIAL_TTY = "/dev/ttyS33"
 //private const val SERIAL_TTY = "/dev/ttyUSB1"
 
+private const val SENSITIVITY_HORIZONTAL_LEFT = -1f
+private const val SENSITIVITY_HORIZONTAL_RIGHT = 1f
+private const val SENSITIVITY_FRONTAL_REV = -1f
+private const val SENSITIVITY_FRONTAL_FORW = 1f
+private const val OUTPUT_MIN = 712f
+private const val OUTPUT_MAX = 312f
+
 private val log = KotlinLogging.logger {}
 
 class AssettoCorsa {
@@ -39,13 +46,34 @@ class AssettoCorsa {
             val carTelemetry = client.carTelemetry
             if (!carTelemetry.equals(prev)) {
                 if (carTelemetry.accGFrontal != prev?.accGFrontal) {
-                    log.info { "accGFrontal: ${carTelemetry.accGFrontal}" }
-                    val r = mapRange(carTelemetry.accGFrontal, -1f, 1f, 712f, 312f)
-                    controller.send(Command.sendTarget(Motor.M1, r.toInt()))
-                    controller.send(Command.sendTarget(Motor.M2, r.toInt()))
+                    //log.info { "accGFrontal: ${carTelemetry.accGFrontal} ${carTelemetry.accGHorizontal}" }
+                    calc(carTelemetry.accGFrontal, carTelemetry.accGHorizontal) { m1, m2 ->
+                        controller.send(Command.sendTarget(Motor.M1, m1))
+                        controller.send(Command.sendTarget(Motor.M2, m2))
+                    }
                 }
                 prev = carTelemetry
             }
+        }
+    }
+
+    companion object {
+        fun calc(gFrontal: Float, gHorizontal: Float, block: (m1: Int, m2: Int) -> Unit) {
+            val m1 = mapRange(
+                (gFrontal + gHorizontal),
+                SENSITIVITY_FRONTAL_REV,
+                SENSITIVITY_FRONTAL_FORW,
+                OUTPUT_MIN,
+                OUTPUT_MAX
+            )
+            val m2 = mapRange(
+                (gFrontal + (-1 * gHorizontal)),
+                SENSITIVITY_FRONTAL_REV,
+                SENSITIVITY_FRONTAL_FORW,
+                OUTPUT_MIN,
+                OUTPUT_MAX
+            )
+            block.invoke(m1.toInt(), m2.toInt())
         }
     }
 
