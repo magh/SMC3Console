@@ -8,8 +8,9 @@ import dev.iimetra.assettocorsa4j.telemetry.serializer.Reader
 import dev.iimetra.assettocorsa4j.telemetry.serializer.Writer
 import mu.KotlinLogging
 import java.net.DatagramSocket
+import kotlin.math.abs
 
-private const val LOCAL_IP_ADDRESS = "192.168.2.59" // Connecting...
+private const val LOCAL_IP_ADDRESS = "192.168.2.58" // Connecting...
 private const val SERIAL_TTY = "/dev/ttyS33"
 //private const val SERIAL_TTY = "/dev/ttyUSB1"
 
@@ -45,12 +46,10 @@ class AssettoCorsa {
         while (true) {
             val carTelemetry = client.carTelemetry
             if (!carTelemetry.equals(prev)) {
-                if (carTelemetry.accGFrontal != prev?.accGFrontal) {
-                    //log.info { "accGFrontal: ${carTelemetry.accGFrontal} ${carTelemetry.accGHorizontal}" }
-                    calc(carTelemetry.accGFrontal, carTelemetry.accGHorizontal) { m1, m2 ->
-                        controller.send(Command.sendTarget(Motor.M1, m1))
-                        controller.send(Command.sendTarget(Motor.M2, m2))
-                    }
+                log.info { "frontal: ${carTelemetry.accGFrontal} horizontal: ${carTelemetry.accGHorizontal} vertical: ${carTelemetry.accGVertical}" }
+                calc(carTelemetry.accGFrontal, carTelemetry.accGVertical) { m1, m2 ->
+                    controller.send(Command.sendTarget(Motor.M1, m1))
+                    controller.send(Command.sendTarget(Motor.M2, m2))
                 }
                 prev = carTelemetry
             }
@@ -59,15 +58,19 @@ class AssettoCorsa {
 
     companion object {
         fun calc(gFrontal: Float, gHorizontal: Float, block: (m1: Int, m2: Int) -> Unit) {
+            val right: Boolean = gHorizontal < 0
+            val habs: Float = abs(gHorizontal)
+            val m1add: Float = if (right) habs else 0f
+            val m2add: Float = if (!right) habs else 0f
             val m1 = mapRange(
-                (gFrontal + gHorizontal),
+                (gFrontal + m1add),
                 SENSITIVITY_FRONTAL_REV,
                 SENSITIVITY_FRONTAL_FORW,
                 OUTPUT_MIN,
                 OUTPUT_MAX
             )
             val m2 = mapRange(
-                (gFrontal + (-1 * gHorizontal)),
+                (gFrontal + m2add),
                 SENSITIVITY_FRONTAL_REV,
                 SENSITIVITY_FRONTAL_FORW,
                 OUTPUT_MIN,
