@@ -33,7 +33,9 @@ dependencies {
 }
 
 application {
-    mainClass.set("com.mathias.simracing.AssettoCorsaKt")
+    //mainClass.set("simracing.AssettoCorsaKt")
+    mainClass.set("simracing.forza.ForzaMainKt")
+    //mainClass.set("simracing.SMC3Console")
 }
 
 val compileKotlin: KotlinCompile by tasks
