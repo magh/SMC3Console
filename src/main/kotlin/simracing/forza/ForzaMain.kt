@@ -1,5 +1,10 @@
 package simracing.forza
 
+import simracing.Command
+import simracing.Motor
+import simracing.Utils.mapRange
+import simracing.Smc3Controller
+import kotlin.math.abs
 import mu.KotlinLogging
 import java.io.IOException
 import java.net.DatagramPacket
@@ -10,10 +15,10 @@ import java.util.*
 private const val SERIAL_TTY = "/dev/ttyS33"
 //private const val SERIAL_TTY = "/dev/ttyUSB1"
 
-private const val SENSITIVITY_HORIZONTAL_LEFT = -1f
-private const val SENSITIVITY_HORIZONTAL_RIGHT = 1f
-private const val SENSITIVITY_FRONTAL_REV = -1f
-private const val SENSITIVITY_FRONTAL_FORW = 1f
+private const val SENSITIVITY_HORIZONTAL_LEFT = -20f
+private const val SENSITIVITY_HORIZONTAL_RIGHT = 20f
+private const val SENSITIVITY_FRONTAL_REV = -20f
+private const val SENSITIVITY_FRONTAL_FORW = 20f
 private const val OUTPUT_MIN = 712f
 private const val OUTPUT_MAX = 312f
 
@@ -50,24 +55,33 @@ class ForzaMain {
             receive = ByteArray(323) //Clear byte buffer
 
             //calc
-            calc(api.accelerationY, api.accelerationX) { m1, m2 ->
-                controller.send(Command.sendTarget(Motor.M1, m1))
-                controller.send(Command.sendTarget(Motor.M2, m2))
+            val aX: Float? = api.accelerationX
+            val aY: Float? = api.accelerationY
+            val aZ: Float? = api.accelerationZ
+            if(aX != null && aY != null && aZ != null){
+                calc(aZ, aX) { m1, m2 ->
+                    controller.send(Command.sendTarget(Motor.M1, m1))
+                    controller.send(Command.sendTarget(Motor.M2, m2))
+                }
             }
         }
     }
 
     companion object {
         fun calc(gFrontal: Float, gHorizontal: Float, block: (m1: Int, m2: Int) -> Unit) {
+            val right: Boolean = gHorizontal < 0
+            val habs: Float = abs(gHorizontal)
+            val m1add: Float = if (!right) habs else 0f
+            val m2add: Float = if (right) habs else 0f
             val m1 = mapRange(
-                (gFrontal + gHorizontal),
+                (gFrontal + m1add),
                 SENSITIVITY_FRONTAL_REV,
                 SENSITIVITY_FRONTAL_FORW,
                 OUTPUT_MIN,
                 OUTPUT_MAX
             )
             val m2 = mapRange(
-                (gFrontal + (-1 * gHorizontal)),
+                (gFrontal + m2add),
                 SENSITIVITY_FRONTAL_REV,
                 SENSITIVITY_FRONTAL_FORW,
                 OUTPUT_MIN,
