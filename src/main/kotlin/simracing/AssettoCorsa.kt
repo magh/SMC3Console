@@ -10,7 +10,7 @@ import mu.KotlinLogging
 import java.net.DatagramSocket
 import kotlin.math.abs
 
-private const val LOCAL_IP_ADDRESS = "192.168.2.58" // Connecting...
+private const val LOCAL_IP_ADDRESS = "192.168.8.101" // Connecting...
 private const val SERIAL_TTY = "/dev/ttyS33"
 //private const val SERIAL_TTY = "/dev/ttyUSB1"
 
